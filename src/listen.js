@@ -68,7 +68,6 @@ module.exports = function(defaultFuncs, api, ctx) {
     .then(utils.parseAndCheckLogin(ctx.jar, defaultFuncs))
     .then(function(resData) {
       var now = Date.now();
-      log.info("Got answer in ", now - tmpPrev);
       tmpPrev = now;
 
       if(resData && resData.t === "lb") {
@@ -109,29 +108,29 @@ module.exports = function(defaultFuncs, api, ctx) {
           switch (v.type) {
             // TODO: 'ttyp' was used before. It changed to 'typ'. We're keeping
             // both for now but we should remove 'ttyp' at some point.
-            case 'ttyp':
-            case 'typ':
-              if(!ctx.globalOptions.listenEvents ||
-                (!ctx.globalOptions.selfListen && v.from.toString() === ctx.userID)) {
-                return;
-              }
+            // case 'ttyp':
+            // case 'typ':
+            //   if(!ctx.globalOptions.listenEvents ||
+            //     (!ctx.globalOptions.selfListen && v.from.toString() === ctx.userID)) {
+            //     return;
+            //   }
 
-              return globalCallback(null, utils.formatTyp(v));
-              break;
-            case 'buddylist_overlay':
-              // TODO: what happens when you're logged in as a page?
-              if(!ctx.globalOptions.updatePresence) {
-                return;
-              }
+            //   return globalCallback(null, utils.formatTyp(v));
+            //   break;
+            // case 'buddylist_overlay':
+            //   // TODO: what happens when you're logged in as a page?
+            //   if(!ctx.globalOptions.updatePresence) {
+            //     return;
+            //   }
 
-              // There should be only one key inside overlay
-              Object.keys(v.overlay).map(function(userID) {
-                var formattedPresence = utils.formatPresence(v.overlay[userID], userID);
-                if(ctx.loggedIn) {
-                  return globalCallback(null, formattedPresence);
-                }
-              });
-              break;
+            //   // There should be only one key inside overlay
+            //   Object.keys(v.overlay).map(function(userID) {
+            //     var formattedPresence = utils.formatPresence(v.overlay[userID], userID);
+            //     if(ctx.loggedIn) {
+            //       return globalCallback(null, formattedPresence);
+            //     }
+            //   });
+            //   break;
             case 'mercury':
               if(ctx.globalOptions.pageID || !ctx.globalOptions.listenEvents){
                return;
@@ -176,7 +175,13 @@ module.exports = function(defaultFuncs, api, ctx) {
 
               atLeastOne = true;
               if (ctx.loggedIn) {
-                return globalCallback(null, utils.formatMessage(v));
+                return globalCallback(null, v);
+              }
+              break;
+            case 'page_typing':
+           
+              if (ctx.loggedIn && v.to.toString() === ctx.globalOptions.pageID) {
+                return globalCallback(null, v);
               }
               break;
           }
